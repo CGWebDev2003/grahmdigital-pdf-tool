@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Header from "@/components/header/Header";
+import Footer from "@/components/footer/Footer";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.css";
 
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body>
         <Header />  
         {children}
+        <Footer />
       </body>
     </html>
   );

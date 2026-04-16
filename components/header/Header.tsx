@@ -6,7 +6,7 @@ export default function Header() {
         <header className={styles.header}>
             <div className={styles.headerContent}>
                 <a className={styles.logoLink} href="/">
-                    <Image src={"/logo_white.png"} height={40} width={82} alt="Grahm Digital Logo" />
+                    <Image src={"/logo_white.png"} height={40} width={82} alt="Grahm Digital Logo" loading="eager" />
                     <h1 className={styles.logoText}>Brief Tool</h1>
                 </a>
                 <div className={styles.actionButtonBox}>
