@@ -8,6 +8,7 @@
     align-items: center;
     justify-content: center;
     background-color: black;
+    z-index: 100;
 }
 
 .headerContent {
@@ -31,14 +32,224 @@
     color: white;
 }
 
-.csvButton {
-    height: 35px;
-    width: 150px;
+.actionButtonBox {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.iconBtn {
+    height: 36px;
+    width: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: .5rem;
     border-radius: 8px;
     cursor: pointer;
-    border: 1px solid white;
+    border: 1px solid #444;
+    background: transparent;
+    color: white;
+    font-size: 1.1rem;
+    transition: border-color .15s, background .15s;
+}
+
+.iconBtn:hover {
+    border-color: white;
+    background: rgba(255,255,255,.08);
+}
+
+/* ── Modal ──────────────────────────────────────── */
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.modal {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.modalHeader h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: .25rem;
+    line-height: 1;
+}
+
+.closeBtn:hover { color: white; }
+
+.modalBody {
+    padding: 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    padding-top: .75rem;
+    border-top: 1px solid #2a2a2a;
+    flex-shrink: 0;
+}
+
+/* ── File input ─────────────────────────────────── */
+
+.fileInput {
+    color: white;
+    font-size: .875rem;
+}
+
+/* ── Preview table ──────────────────────────────── */
+
+.previewInfo {
+    font-size: .85rem;
+    color: #aaa;
+}
+
+.previewWrapper {
+    overflow-x: auto;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+}
+
+.previewTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .8rem;
+}
+
+.previewTable th,
+.previewTable td {
+    padding: .4rem .75rem;
+    text-align: left;
+    border-bottom: 1px solid #2a2a2a;
+    white-space: nowrap;
+}
+
+.previewTable th {
+    color: #888;
+    font-weight: 500;
+    background: #181818;
+}
+
+.dupRow td { color: #777; }
+
+.dupBadge {
+    background: #4a1c1c;
+    color: #f87171;
+    padding: .1rem .4rem;
+    border-radius: 4px;
+    font-size: .75rem;
+}
+
+.newBadge {
+    background: #1a3a27;
+    color: #4ade80;
+    padding: .1rem .4rem;
+    border-radius: 4px;
+    font-size: .75rem;
+}
+
+.dupLabel { color: #f87171; }
+
+/* ── Add form ───────────────────────────────────── */
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+}
+
+.formLabel {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    font-size: .85rem;
+    color: #aaa;
+}
+
+.formInput {
+    background: #121212;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: white;
+    padding: .5rem .75rem;
+    font-size: .875rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.formInput:focus { border-color: #555; }
+
+/* ── Buttons ────────────────────────────────────── */
+
+.cancelBtn {
+    padding: .45rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: transparent;
+    color: #ccc;
+    cursor: pointer;
+    font-size: .875rem;
+    font-family: inherit;
+}
+
+.cancelBtn:hover { border-color: #888; color: white; }
+
+.confirmBtn {
+    padding: .45rem 1rem;
+    border-radius: 6px;
+    border: none;
+    background: white;
+    color: black;
+    cursor: pointer;
+    font-size: .875rem;
+    font-weight: 600;
+    font-family: inherit;
+    transition: opacity .15s;
+}
+
+.confirmBtn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── Error ──────────────────────────────────────── */
+
+.errorMsg {
+    color: #f87171;
+    font-size: .85rem;
 }
