@@ -159,7 +159,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   doc.line(anlageX, curY + 0.5, anlageX + anlageW, curY + 0.5);
 
   // --- SIGNATURE ---
-  const signW = 38;
+  const signW = 28;
   const signH = (cachedSign.height / cachedSign.width) * signW;
   doc.addImage(cachedSign.data, "PNG", marginLeft - 2, curY + 3, signW, signH);
 
@@ -182,7 +182,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     const footerW = contentWidth;
 
     doc.setFillColor(0, 0, 0);
-    doc.rect(footerX, footerY, footerW, footerH, "F");
+    doc.roundedRect(footerX, footerY, footerW, footerH, 3, 3, "F");
 
     // QR codes on the right side
     const qrSize = 22;
@@ -192,7 +192,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     const qr2X = footerX + footerW - qrPadRight - qrSize;
     const qr1X = qr2X - qrGap - qrSize;
     const qrTopY = footerY + qrPadTop;
-    const labelY = qrTopY + qrSize + 2.5;
+    const labelY = qrTopY + qrSize + 0.5;
 
     doc.addImage(cachedQr1, "PNG", qr1X, qrTopY, qrSize, qrSize);
     doc.addImage(cachedQr2, "PNG", qr2X, qrTopY, qrSize, qrSize);
@@ -208,7 +208,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     const ctaMaxW = qr1X - ctaX - 5;
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(14);
     doc.setTextColor(255, 255, 255);
     doc.text("Jetzt online starten!", ctaX, footerY + 14);
 
