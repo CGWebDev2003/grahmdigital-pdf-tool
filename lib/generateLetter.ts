@@ -55,10 +55,10 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   const pageHeight = 297;
   const contentWidth = pageWidth - marginLeft - marginRight;
 
-  // --- LOGO (top right) ---
+  // --- LOGO (top right, top edge aligned with sender address) ---
   const logoW = 48;
   const logoH = (cachedLogo.height / cachedLogo.width) * logoW;
-  doc.addImage(cachedLogo.data, "PNG", pageWidth - marginRight - logoW, 10, logoW, logoH);
+  doc.addImage(cachedLogo.data, "PNG", pageWidth - marginRight - logoW, 25, logoW, logoH);
 
   // --- SENDER LINE ---
   doc.setFont("helvetica", "normal");
@@ -78,7 +78,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
 
   // --- DATE (right-aligned to right margin) ---
   const metaRightX = pageWidth - marginRight;
-  const metaY = 55;
+  const metaY = 65;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
@@ -174,24 +174,54 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   doc.setTextColor(0, 0, 0);
   doc.text("- Keine -", anlageX, curY + 10);
 
-  // --- QR CODES (bottom of page) ---
+  // --- FOOTER BLACK BOX ---
   if (cachedQr1 && cachedQr2) {
+    const footerY = 252;
+    const footerH = 38;
+    const footerX = marginLeft;
+    const footerW = contentWidth;
+
+    doc.setFillColor(0, 0, 0);
+    doc.rect(footerX, footerY, footerW, footerH, "F");
+
+    // QR codes on the right side
     const qrSize = 22;
-    const qrY = 252;
-    const labelY = qrY + qrSize + 4;
+    const qrGap = 3;
+    const qrPadRight = 5;
+    const qrPadTop = 5;
+    const qr2X = footerX + footerW - qrPadRight - qrSize;
+    const qr1X = qr2X - qrGap - qrSize;
+    const qrTopY = footerY + qrPadTop;
+    const labelY = qrTopY + qrSize + 2.5;
 
-    doc.setDrawColor(210, 210, 210);
-    doc.setLineWidth(0.3);
-    doc.line(marginLeft, qrY - 5, pageWidth - marginRight, qrY - 5);
+    doc.addImage(cachedQr1, "PNG", qr1X, qrTopY, qrSize, qrSize);
+    doc.addImage(cachedQr2, "PNG", qr2X, qrTopY, qrSize, qrSize);
 
-    doc.addImage(cachedQr1, "PNG", marginLeft, qrY, qrSize, qrSize);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Kostenloses Erstgespräch buchen", marginLeft + qrSize / 2, labelY, { align: "center" });
+    doc.setFontSize(6);
+    doc.setTextColor(180, 180, 180);
+    doc.text("Erstgespräch buchen", qr1X + qrSize / 2, labelY, { align: "center" });
+    doc.text("Unsere Website", qr2X + qrSize / 2, labelY, { align: "center" });
 
-    doc.addImage(cachedQr2, "PNG", pageWidth - marginRight - qrSize, qrY, qrSize, qrSize);
-    doc.text("Unsere Website", pageWidth - marginRight - qrSize / 2, labelY, { align: "center" });
+    // CTA headline + text on the left side
+    const ctaX = footerX + 8;
+    const ctaMaxW = qr1X - ctaX - 5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Jetzt online starten!", ctaX, footerY + 14);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(200, 200, 200);
+    const ctaLines = doc.splitTextToSize(
+      "Scannen Sie den QR-Code und buchen Sie Ihr kostenloses 15-Minuten-Gespräch.",
+      ctaMaxW
+    ) as string[];
+    ctaLines.forEach((line, i) => {
+      doc.text(line, ctaX, footerY + 14 + 6.5 + i * 5);
+    });
   }
 
   return new Uint8Array(doc.output("arraybuffer") as ArrayBuffer);
