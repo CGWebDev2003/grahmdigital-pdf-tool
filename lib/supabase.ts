@@ -13,5 +13,6 @@ export interface Contact {
   plz: string;
   ort: string;
   fachrichtung: string;
+  angeschrieben: boolean;
   created_at: string;
 }

@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { PDFDocument } from "pdf-lib";
+import QRCode from "qrcode";
 import type { Contact } from "./supabase";
 
 interface ImageCache {
@@ -10,6 +11,8 @@ interface ImageCache {
 
 let cachedLogo: ImageCache | null = null;
 let cachedSign: ImageCache | null = null;
+let cachedQr1: string | null = null;
+let cachedQr2: string | null = null;
 
 async function prepareImage(src: string): Promise<ImageCache> {
   return new Promise((resolve, reject) => {
@@ -29,10 +32,16 @@ async function prepareImage(src: string): Promise<ImageCache> {
 }
 
 export async function preloadImages(): Promise<void> {
-  [cachedLogo, cachedSign] = await Promise.all([
+  const [logo, sign, qr1, qr2] = await Promise.all([
     prepareImage("/logo_black.png"),
     prepareImage("/sign_black.png"),
+    QRCode.toDataURL("https://cal.com/colin-grahm", { margin: 1, width: 200 }),
+    QRCode.toDataURL("https://grahmdigital.de", { margin: 1, width: 200 }),
   ]);
+  cachedLogo = logo;
+  cachedSign = sign;
+  cachedQr1 = qr1;
+  cachedQr2 = qr2;
 }
 
 export function generateLetterPdf(contact: Contact): Uint8Array {
@@ -67,24 +76,24 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     if (line?.trim()) doc.text(line, marginLeft, addrY + i * addrLineH);
   });
 
-  // --- META BLOCK (right side) ---
-  const metaX = 128;
+  // --- DATE (right-aligned to right margin) ---
+  const metaRightX = pageWidth - marginRight;
   const metaY = 55;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
-  doc.text("Datum", metaX, metaY);
+  doc.text("Datum", metaRightX, metaY, { align: "right" });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   const dateStr = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
-  doc.text(dateStr, metaX, metaY + 5.5);
+  doc.text(dateStr, metaRightX, metaY + 5.5, { align: "right" });
 
   // --- SUBJECT LINE ---
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
-  doc.setTextColor(74, 121, 45); // dark green
+  doc.setTextColor(74, 121, 45);
   doc.text("Ihre Praxis – noch nicht online?", marginLeft, 82);
 
   // --- BODY ---
@@ -110,7 +119,6 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     lines.forEach((line, li) => {
       const isLastLine = li === lines.length - 1;
       if (lines.length > 1 && !isLastLine) {
-        // justify all but last line
         const words = line.split(" ");
         if (words.length > 1) {
           const textWidth = doc.getTextWidth(line.trimEnd());
@@ -143,7 +151,6 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
-  // underline "Anlage/n"
   const anlageText = "Anlage/n";
   const anlageW = doc.getTextWidth(anlageText);
   doc.text(anlageText, anlageX, curY);
@@ -166,6 +173,26 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   doc.text("- Keine -", anlageX, curY + 10);
+
+  // --- QR CODES (bottom of page) ---
+  if (cachedQr1 && cachedQr2) {
+    const qrSize = 22;
+    const qrY = 252;
+    const labelY = qrY + qrSize + 4;
+
+    doc.setDrawColor(210, 210, 210);
+    doc.setLineWidth(0.3);
+    doc.line(marginLeft, qrY - 5, pageWidth - marginRight, qrY - 5);
+
+    doc.addImage(cachedQr1, "PNG", marginLeft, qrY, qrSize, qrSize);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Kostenloses Erstgespräch buchen", marginLeft + qrSize / 2, labelY, { align: "center" });
+
+    doc.addImage(cachedQr2, "PNG", pageWidth - marginRight - qrSize, qrY, qrSize, qrSize);
+    doc.text("Unsere Website", pageWidth - marginRight - qrSize / 2, labelY, { align: "center" });
+  }
 
   return new Uint8Array(doc.output("arraybuffer") as ArrayBuffer);
 }
