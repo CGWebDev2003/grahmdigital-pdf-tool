@@ -46,30 +46,6 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   const pageHeight = 297;
   const contentWidth = pageWidth - marginLeft - marginRight;
 
-  // --- CROP MARKS ---
-  doc.setDrawColor(150, 150, 150);
-  doc.setLineWidth(0.2);
-  const markLen = 4;
-  const markOffset = 5;
-  // top-left
-  doc.line(markOffset, markOffset, markOffset + markLen, markOffset);
-  doc.line(markOffset, markOffset, markOffset, markOffset + markLen);
-  // top-right
-  doc.line(pageWidth - markOffset, markOffset, pageWidth - markOffset - markLen, markOffset);
-  doc.line(pageWidth - markOffset, markOffset, pageWidth - markOffset, markOffset + markLen);
-  // bottom-left
-  doc.line(markOffset, pageHeight - markOffset, markOffset + markLen, pageHeight - markOffset);
-  doc.line(markOffset, pageHeight - markOffset, markOffset, pageHeight - markOffset - markLen);
-  // bottom-right
-  doc.line(pageWidth - markOffset, pageHeight - markOffset, pageWidth - markOffset - markLen, pageHeight - markOffset);
-  doc.line(pageWidth - markOffset, pageHeight - markOffset, pageWidth - markOffset, pageHeight - markOffset - markLen);
-
-  // --- FOLD MARKS (left edge, DIN 5008) ---
-  doc.setDrawColor(180, 180, 180);
-  doc.setLineWidth(0.15);
-  doc.line(markOffset, 105, markOffset + markLen, 105);
-  doc.line(markOffset, 210, markOffset + markLen, 210);
-
   // --- LOGO (top right) ---
   const logoW = 48;
   const logoH = (cachedLogo.height / cachedLogo.width) * logoW;
@@ -80,11 +56,6 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   doc.setFontSize(7.5);
   doc.setTextColor(100, 100, 100);
   doc.text("Grahm Digital  |  Schwedenstraße 29A, 04420 Markranstädt", marginLeft, 28);
-
-  // --- HEADER SEPARATOR ---
-  doc.setDrawColor(180, 180, 180);
-  doc.setLineWidth(0.3);
-  doc.line(marginLeft, 31, pageWidth - marginRight, 31);
 
   // --- RECIPIENT ADDRESS BLOCK ---
   const addrY = 44;
@@ -102,15 +73,13 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
-  doc.text("Bearbeiter", metaX, metaY);
-  doc.text("Datum", metaX + 32, metaY);
+  doc.text("Datum", metaX, metaY);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
-  doc.text("Colin Grahm", metaX, metaY + 5.5);
   const dateStr = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
-  doc.text(dateStr, metaX + 32, metaY + 5.5);
+  doc.text(dateStr, metaX, metaY + 5.5);
 
   // --- SUBJECT LINE ---
   doc.setFont("helvetica", "bold");

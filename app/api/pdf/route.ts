@@ -85,29 +85,15 @@ export async function POST(req: Request) {
   const metaX = width - marginRight - 150;
   const metaY = addressY - 20;
 
-  page.drawText("Bearbeiter", {
-    x: metaX,
-    y: metaY,
-    size: 9,
-    font,
-  });
-
   page.drawText("Datum", {
-    x: metaX + 80,
+    x: metaX,
     y: metaY,
     size: 9,
     font,
-  });
-
-  page.drawText("Colin Grahm", {
-    x: metaX,
-    y: metaY - 15,
-    size: 11,
-    font: fontBold,
   });
 
   page.drawText(new Date().toLocaleDateString("de-DE"), {
-    x: metaX + 80,
+    x: metaX,
     y: metaY - 15,
     size: 11,
     font: fontBold,
