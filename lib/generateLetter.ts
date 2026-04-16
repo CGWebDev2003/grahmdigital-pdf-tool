@@ -46,87 +46,117 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   const pageWidth = 210;
   const contentWidth = pageWidth - marginLeft - marginRight;
 
-  // Logo top right (140pt = 49.4mm)
-  const logoW = 49.4;
+  // --- LOGO (top right) ---
+  const logoW = 46;
   const logoH = (cachedLogo.height / cachedLogo.width) * logoW;
   doc.addImage(cachedLogo.data, "PNG", pageWidth - marginRight - logoW, marginTop, logoW, logoH);
 
-  // Absender
+  // --- SENDER LINE ---
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text("Grahm Digital | Schwedenstraße 29A, 04420 Markranstädt", marginLeft, 31.2);
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Grahm Digital  |  Schwedenstraße 29A, 04420 Markranstädt", marginLeft, 30);
 
-  // Empfänger address block (45mm from top)
-  const addrY = 45;
-  const addrLineH = 5.64; // 16pt
-  doc.setFontSize(12);
+  // --- HEADER SEPARATOR ---
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.line(marginLeft, 33, pageWidth - marginRight, 33);
+
+  // --- RECIPIENT ADDRESS BLOCK ---
+  const addrY = 44;
+  const addrLineH = 5.5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
   [contact.firma, contact.empfaenger, contact.strasse, `${contact.plz} ${contact.ort}`].forEach((line, i) => {
     if (line?.trim()) doc.text(line, marginLeft, addrY + i * addrLineH);
   });
 
-  // Meta (right side) — metaX = (595 - 70.87 - 150) / 2.835 ≈ 132mm
-  const metaX = 132;
-  const metaY = 52;
+  // --- META BLOCK (right side) ---
+  const metaX = 130;
+  const metaY = 44;
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  doc.setFontSize(8);
+  doc.setTextColor(120, 120, 120);
   doc.text("Bearbeiter", metaX, metaY);
-  doc.text("Datum", metaX + 28.22, metaY);
+  doc.text("Datum", metaX + 30, metaY);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("Colin Grahm", metaX, metaY + 5.29);
-  doc.text(new Date().toLocaleDateString("de-DE"), metaX + 28.22, metaY + 5.29);
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Colin Grahm", metaX, metaY + 5);
+  doc.text(new Date().toLocaleDateString("de-DE"), metaX + 30, metaY + 5);
 
-  // Subject (87.33mm from top)
+  // --- SUBJECT SEPARATOR ---
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.3);
+  doc.line(marginLeft, 71, pageWidth - marginRight, 71);
+
+  // --- SUBJECT LINE ---
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
-  doc.text("Ihre Praxis – noch nicht online?", marginLeft, 87.33);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Ihre Praxis – noch nicht online?", marginLeft, 80);
 
-  // Body
+  // --- BODY ---
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  const lineH = 6.35; // 18pt
+  doc.setTextColor(30, 30, 30);
+  const lineH = 5.5;
+  const paraGap = 4.5;
 
   const bodyParagraphs = [
     "Sehr geehrte Dame, Sehr geehrter Herr des Hauses,",
-    "",
     `bei meiner Recherche nach Praxen für ${contact.fachrichtung} ist mir aufgefallen, dass Ihre Praxis aktuell keine eigene Website hat.`,
-    "",
     "Das bedeutet: Patienten, die online nach Ihnen suchen, finden Sie nicht – oder landen bei der Konkurrenz.",
-    "",
     "Ich bin Colin Grahm von Grahm Digital. Wir bauen professionelle Websites speziell für Arztpraxen.",
-    "",
     "Kein Technik-Stress. Kein Abstimmungschaos. Keine versteckten Kosten.",
-    "",
     "Ab 110 € im Monat, alles inklusive.",
-    "",
     "Ich würde Ihnen das gerne in einem kurzen Gespräch zeigen.",
   ];
 
-  let curY = 101.44;
-  bodyParagraphs.forEach((para) => {
-    if (para === "") { curY += lineH; return; }
-    const lines = doc.splitTextToSize(para, contentWidth);
+  let curY = 91;
+  bodyParagraphs.forEach((para, index) => {
+    const lines = doc.splitTextToSize(para, contentWidth) as string[];
     doc.text(lines, marginLeft, curY);
-    curY += (lines as string[]).length * lineH;
+    curY += lines.length * lineH;
+    if (index < bodyParagraphs.length - 1) curY += paraGap;
   });
 
-  // Closing
-  const closingY = curY + 10.58; // 30pt gap
+  // --- CLOSING SEPARATOR ---
+  const closingY = curY + 12;
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.2);
+  doc.line(marginLeft, closingY - 5, pageWidth - marginRight, closingY - 5);
+
+  // --- CLOSING TEXT ---
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
   doc.text("Mit freundlichen Grüßen", marginLeft, closingY);
 
-  // Signature image
-  const signW = 42.33; // 120pt
+  // --- SIGNATURE ---
+  const signW = 40;
   const signH = (cachedSign.height / cachedSign.width) * signW;
-  doc.addImage(cachedSign.data, "PNG", marginLeft, closingY + 8, signW, signH);
-  doc.text("Colin Grahm", marginLeft, closingY + 35.27);
+  doc.addImage(cachedSign.data, "PNG", marginLeft - 2, closingY + 4, signW, signH);
 
-  // Anlage (right side of closing)
-  const anlageX = 142.67;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Colin Grahm", marginLeft, closingY + signH + 9);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Grahm Digital", marginLeft, closingY + signH + 14);
+
+  // --- ANLAGE (right side) ---
+  const anlageX = 142;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(120, 120, 120);
   doc.text("Anlage/n", anlageX, closingY);
-  doc.text("- Keine -", anlageX, closingY + 7.06);
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text("– Keine –", anlageX, closingY + 6);
 
   return new Uint8Array(doc.output("arraybuffer") as ArrayBuffer);
 }
