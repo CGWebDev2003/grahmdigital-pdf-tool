@@ -39,6 +39,7 @@ function parseCSV(text: string): CsvRow[] {
     headers.forEach((h, i) => (row[h] = vals[i]?.trim() ?? ""));
     return {
       firma: row["firma"] ?? "",
+      anrede: row["anrede"] ?? "",
       empfaenger: row["empfaenger"] ?? "",
       strasse: row["strasse"] ?? "",
       plz: row["plz"] ?? "",
@@ -112,14 +113,14 @@ function CsvImportModal({ onClose }: { onClose: () => void }) {
                 <table className={styles.previewTable}>
                   <thead>
                     <tr>
-                      <th>Status</th><th>Firma</th><th>Empfänger</th><th>Straße</th><th>PLZ</th><th>Ort</th><th>Fachrichtung</th>
+                      <th>Status</th><th>Firma</th><th>Anrede</th><th>Empfänger</th><th>Straße</th><th>PLZ</th><th>Ort</th><th>Fachrichtung</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rows.map((r, i) => (
                       <tr key={i} className={r.duplicate ? styles.dupRow : ""}>
                         <td>{r.duplicate ? <span className={styles.dupBadge}>Duplikat</span> : <span className={styles.newBadge}>Neu</span>}</td>
-                        <td>{r.firma}</td><td>{r.empfaenger}</td><td>{r.strasse}</td><td>{r.plz}</td><td>{r.ort}</td><td>{r.fachrichtung}</td>
+                        <td>{r.firma}</td><td>{r.anrede}</td><td>{r.empfaenger}</td><td>{r.strasse}</td><td>{r.plz}</td><td>{r.ort}</td><td>{r.fachrichtung}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -145,7 +146,7 @@ function CsvImportModal({ onClose }: { onClose: () => void }) {
 
 // ─── Add Contact Modal ─────────────────────────────────────────────────────────
 
-const EMPTY_FORM: CsvRow = { firma: "", empfaenger: "", strasse: "", plz: "", ort: "", fachrichtung: "" };
+const EMPTY_FORM: CsvRow = { firma: "", anrede: "", empfaenger: "", strasse: "", plz: "", ort: "", fachrichtung: "" };
 
 function AddContactModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState<CsvRow>(EMPTY_FORM);
@@ -184,6 +185,7 @@ function AddContactModal({ onClose }: { onClose: () => void }) {
 
   const fields: { name: keyof CsvRow; label: string; placeholder: string }[] = [
     { name: "firma", label: "Firma", placeholder: "Mustermann GmbH" },
+    { name: "anrede", label: "Anrede", placeholder: "Herr / Frau" },
     { name: "empfaenger", label: "Empfänger", placeholder: "Dr. Max Mustermann" },
     { name: "strasse", label: "Straße", placeholder: "Musterstraße 1" },
     { name: "plz", label: "PLZ", placeholder: "04420" },

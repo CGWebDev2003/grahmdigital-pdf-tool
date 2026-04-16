@@ -8,6 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export interface Contact {
   id: string;
   firma: string;
+  anrede: string;
   empfaenger: string;
   strasse: string;
   plz: string;

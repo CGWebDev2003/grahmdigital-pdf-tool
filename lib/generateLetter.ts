@@ -11,7 +11,6 @@ interface ImageCache {
 
 let cachedLogo: ImageCache | null = null;
 let cachedSign: ImageCache | null = null;
-let cachedQr1: string | null = null;
 let cachedQr2: string | null = null;
 
 async function prepareImage(src: string): Promise<ImageCache> {
@@ -32,15 +31,13 @@ async function prepareImage(src: string): Promise<ImageCache> {
 }
 
 export async function preloadImages(): Promise<void> {
-  const [logo, sign, qr1, qr2] = await Promise.all([
+  const [logo, sign, qr2] = await Promise.all([
     prepareImage("/logo_black.png"),
     prepareImage("/sign_black.png"),
-    QRCode.toDataURL("https://cal.com/colin-grahm", { margin: 1, width: 200 }),
     QRCode.toDataURL("https://grahmdigital.de", { margin: 1, width: 200 }),
   ]);
   cachedLogo = logo;
   cachedSign = sign;
-  cachedQr1 = qr1;
   cachedQr2 = qr2;
 }
 
@@ -103,8 +100,15 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   const lineH = 5.8;
   const paraGap = 4.5;
 
+  const salutation =
+    contact.anrede && contact.empfaenger
+      ? contact.anrede.toLowerCase() === "frau"
+        ? `Sehr geehrte Frau ${contact.empfaenger},`
+        : `Sehr geehrter Herr ${contact.empfaenger},`
+      : "Sehr geehrte Damen und Herren,";
+
   const paragraphs = [
-    "Sehr geehrte Dame, Sehr geehrter Herr des Hauses,",
+    salutation,
     `bei meiner Recherche nach ${contact.fachrichtung} in Leipzig und Umgebung ist mir aufgefallen, dass Ihre Praxis aktuell keine eigene Website hat.`,
     "Das bedeutet: Patienten, die online nach Ihnen suchen, finden Sie nicht – oder landen bei der Konkurrenz.",
     "Ich bin Colin Grahm von Grahm Digital. Wir bauen professionelle Websites speziell für Arztpraxen, Pflegedienste und Therapeuten – und das Wichtigste dabei: Sie müssen sich um nichts kümmern.",
@@ -175,7 +179,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   doc.text("- Keine -", anlageX, curY + 10);
 
   // --- FOOTER BLACK BOX ---
-  if (cachedQr1 && cachedQr2) {
+  if (cachedQr2) {
     const footerY = 252;
     const footerH = 38;
     const footerX = marginLeft;
@@ -184,28 +188,24 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     doc.setFillColor(0, 0, 0);
     doc.roundedRect(footerX, footerY, footerW, footerH, 3, 3, "F");
 
-    // QR codes on the right side
+    // Single QR code (website) on the right side
     const qrSize = 22;
-    const qrGap = 3;
     const qrPadRight = 5;
     const qrPadTop = 5;
-    const qr2X = footerX + footerW - qrPadRight - qrSize;
-    const qr1X = qr2X - qrGap - qrSize;
+    const qrX = footerX + footerW - qrPadRight - qrSize;
     const qrTopY = footerY + qrPadTop;
     const labelY = qrTopY + qrSize + 3;
 
-    doc.addImage(cachedQr1, "PNG", qr1X, qrTopY, qrSize, qrSize);
-    doc.addImage(cachedQr2, "PNG", qr2X, qrTopY, qrSize, qrSize);
+    doc.addImage(cachedQr2, "PNG", qrX, qrTopY, qrSize, qrSize);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6);
     doc.setTextColor(180, 180, 180);
-    doc.text("Erstgespräch buchen", qr1X + qrSize / 2, labelY, { align: "center" });
-    doc.text("Unsere Website", qr2X + qrSize / 2, labelY, { align: "center" });
+    doc.text("www.grahmdigital.de", qrX + qrSize / 2, labelY, { align: "center" });
 
     // CTA headline + text on the left side
     const ctaX = footerX + 8;
-    const ctaMaxW = qr1X - ctaX - 5;
+    const ctaMaxW = qrX - ctaX - 5;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
@@ -216,7 +216,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     doc.setFontSize(8.5);
     doc.setTextColor(200, 200, 200);
     const ctaLines = doc.splitTextToSize(
-      "Scannen Sie den QR-Code und buchen Sie Ihr kostenloses 15-Minuten-Gespräch.",
+      "15 Minuten. Kostenlos. Einfach scannen.",
       ctaMaxW
     ) as string[];
     ctaLines.forEach((line, i) => {

@@ -116,8 +116,15 @@ export async function POST(req: Request) {
   // ==============================
   const bodyY = subjectY - 40;
 
+  const salutation =
+    data.anrede && data.empfaenger
+      ? data.anrede.toLowerCase() === "frau"
+        ? `Sehr geehrte Frau ${data.empfaenger},`
+        : `Sehr geehrter Herr ${data.empfaenger},`
+      : "Sehr geehrte Damen und Herren,";
+
   const bodyLines = [
-    "Sehr geehrte Dame, Sehr geehrter Herr des Hauses,",
+    salutation,
     "",
     `bei meiner Recherche nach Praxen für ${data.fachrichtung} ist mir aufgefallen, dass Ihre Praxis aktuell keine eigene Website hat.`,
     "",
