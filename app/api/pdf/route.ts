@@ -216,7 +216,7 @@ export async function POST(req: Request) {
   // ==============================
   const pdfBytes = await pdfDoc.save();
 
-  return new NextResponse(pdfBytes, {
+  return new NextResponse(pdfBytes.buffer as ArrayBuffer, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": "attachment; filename=geschaeftsbrief.pdf",

@@ -1,142 +1,101 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
-}
-
 .main {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 5.5rem 1.5rem 4rem;
+    min-height: 100vh;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+.count {
+    font-size: .85rem;
+    color: #888;
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
+.generateBtn {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem 1.1rem;
+    border-radius: 8px;
+    border: none;
+    background: white;
+    color: black;
+    font-size: .875rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity .15s;
 }
 
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
+.generateBtn:disabled {
+    opacity: .35;
+    cursor: not-allowed;
 }
 
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+.empty {
+    color: #555;
+    font-size: .9rem;
+    margin-top: 3rem;
+    text-align: center;
 }
 
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+/* ── Table ─────────────────────────────────────── */
+
+.tableWrapper {
+    overflow-x: auto;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .875rem;
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+.table th,
+.table td {
+    padding: .6rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #1f1f1f;
+    white-space: nowrap;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.table th {
+    font-size: .78rem;
+    font-weight: 500;
+    color: #666;
+    background: #111;
+    text-transform: uppercase;
+    letter-spacing: .04em;
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.table tbody tr {
+    cursor: pointer;
+    transition: background .1s;
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
+.table tbody tr:hover {
+    background: #1a1a1a;
+}
 
-  .page {
-    --background: #000;
-    --foreground: #000;
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
+.rowSelected {
+    background: #1a2030 !important;
+}
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
+.table input[type="checkbox"] {
+    accent-color: white;
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
 }
