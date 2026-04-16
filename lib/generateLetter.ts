@@ -192,7 +192,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     const qr2X = footerX + footerW - qrPadRight - qrSize;
     const qr1X = qr2X - qrGap - qrSize;
     const qrTopY = footerY + qrPadTop;
-    const labelY = qrTopY + qrSize + 0.5;
+    const labelY = qrTopY + qrSize + 3;
 
     doc.addImage(cachedQr1, "PNG", qr1X, qrTopY, qrSize, qrSize);
     doc.addImage(cachedQr2, "PNG", qr2X, qrTopY, qrSize, qrSize);
