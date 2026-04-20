@@ -116,7 +116,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
     "Ich bin Colin Grahm von Grahm Digital. Wir bauen professionelle Websites speziell für Arztpraxen, Pflegedienste und Therapeuten – und das Wichtigste dabei: Sie müssen sich um nichts kümmern.",
     "Kein Technik-Stress. Kein Abstimmungschaos. Kein stundenlanger Aufwand Ihrerseits. Ich übernehme alles – von der Domain über das Design bis zur DSGVO-konformen Einrichtung. Sie bekommen am Ende eine fertige, professionelle Website – und einen Ansprechpartner, der dauerhaft für Sie da ist.",
     "Ab 110 € im Monat, alles inklusive. Kein Einmalpreis, kein Risiko vorab. Live in 30 Tagen.",
-    "Ich würde Ihnen das gerne in einem kurzen 15-minütigen Gespräch zeigen – kostenlos und unverbindlich.",
+    "Ich würde Ihnen das gerne in einem kurzen 15-minütigen Gespräch zeigen – kostenlos und unverbindlich. Oder besuchen Sie uns unter www.grahmdigital.de",
   ];
 
   let curY = 93;
