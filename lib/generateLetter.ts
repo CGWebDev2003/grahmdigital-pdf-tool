@@ -22,8 +22,10 @@ async function prepareImage(src: string): Promise<ImageCache> {
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
-      resolve({ data: canvas.toDataURL("image/png"), width: img.naturalWidth, height: img.naturalHeight });
+      resolve({ data: canvas.toDataURL("image/jpeg", 0.82), width: img.naturalWidth, height: img.naturalHeight });
     };
     img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
     img.src = src;
@@ -44,7 +46,7 @@ export async function preloadImages(): Promise<void> {
 export function generateLetterPdf(contact: Contact): Uint8Array {
   if (!cachedLogo || !cachedSign) throw new Error("Images not preloaded");
 
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
 
   const marginLeft = 25;
   const marginRight = 25;
@@ -55,7 +57,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   // --- LOGO (top right, top edge aligned with sender address) ---
   const logoW = 48;
   const logoH = (cachedLogo.height / cachedLogo.width) * logoW;
-  doc.addImage(cachedLogo.data, "PNG", pageWidth - marginRight - logoW, 25, logoW, logoH);
+  doc.addImage(cachedLogo.data, "JPEG", pageWidth - marginRight - logoW, 25, logoW, logoH);
 
   // --- SENDER LINE ---
   doc.setFont("helvetica", "normal");
@@ -165,7 +167,7 @@ export function generateLetterPdf(contact: Contact): Uint8Array {
   // --- SIGNATURE ---
   const signW = 28;
   const signH = (cachedSign.height / cachedSign.width) * signW;
-  doc.addImage(cachedSign.data, "PNG", marginLeft - 2, curY + 3, signW, signH);
+  doc.addImage(cachedSign.data, "JPEG", marginLeft - 2, curY + 3, signW, signH);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
@@ -234,5 +236,5 @@ export async function mergePdfs(pdfArrays: Uint8Array[]): Promise<Uint8Array> {
     const pages = await merged.copyPages(src, src.getPageIndices());
     pages.forEach((p) => merged.addPage(p));
   }
-  return merged.save();
+  return merged.save({ useObjectStreams: true });
 }
