@@ -5,6 +5,12 @@ Format: [Semantic Versioning](https://semver.org/) — `MAJOR.MINOR.PATCH`
 
 ---
 
+## [v1.2.1] - 2026-04-21
+### Fixed
+- Tabellen-Header bleibt beim vertikalen Scrollen oben fixiert (`position: sticky; top: 0`)
+
+---
+
 ## [v1.2.0] - 2026-04-21
 ### Changed
 - Page is no longer scrollable; only the contacts table scrolls within the viewport
