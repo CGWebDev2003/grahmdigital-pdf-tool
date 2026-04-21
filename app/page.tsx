@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase, type Contact } from "@/lib/supabase";
 import { preloadImages, generateLetterPdf, mergePdfs } from "@/lib/generateLetter";
 import styles from "./page.module.css";
 import hStyles from "@/components/header/header.module.css";
 
 type EditForm = Omit<Contact, "id" | "created_at" | "angeschrieben">;
+type SortDir = "asc" | "desc" | null;
+type SortableCol = "firma" | "empfaenger" | "strasse" | "plz" | "ort" | "fachrichtung" | "angeschrieben";
+type FilterableCol = "firma" | "empfaenger" | "strasse" | "plz" | "ort" | "fachrichtung";
 
 function EditContactModal({ contact, onClose, onSaved }: {
   contact: Contact;
@@ -15,6 +18,7 @@ function EditContactModal({ contact, onClose, onSaved }: {
 }) {
   const [form, setForm] = useState<EditForm>({
     firma: contact.firma,
+    anrede: contact.anrede,
     empfaenger: contact.empfaenger,
     strasse: contact.strasse,
     plz: contact.plz,
@@ -92,6 +96,11 @@ export default function ContactsPage() {
   const [activeTab, setActiveTab] = useState<"offene" | "angeschriebene">("offene");
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortCol, setSortCol] = useState<SortableCol | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>(null);
+  const [colFilters, setColFilters] = useState<Partial<Record<FilterableCol, string>>>({});
+
   const fetchContacts = useCallback(async () => {
     const { data } = await supabase.from("contacts").select("*").order("created_at", { ascending: false });
     setContacts(data ?? []);
@@ -104,21 +113,61 @@ export default function ContactsPage() {
     return () => window.removeEventListener("contacts-updated", fetchContacts);
   }, [fetchContacts]);
 
-  const filteredContacts = contacts.filter((c) =>
-    activeTab === "angeschriebene" ? c.angeschrieben : !c.angeschrieben
+  const tabContacts = useMemo(
+    () => contacts.filter((c) => activeTab === "angeschriebene" ? c.angeschrieben : !c.angeschrieben),
+    [contacts, activeTab]
   );
 
-  const allSelected = filteredContacts.length > 0 && filteredContacts.every((c) => selected.has(c.id));
+  const displayedContacts = useMemo(() => {
+    let result = [...tabContacts];
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((c) =>
+        [c.firma, c.anrede, c.empfaenger, c.strasse, c.plz, c.ort, c.fachrichtung]
+          .some((v) => v.toLowerCase().includes(q))
+      );
+    }
+
+    (Object.entries(colFilters) as [FilterableCol, string][]).forEach(([col, val]) => {
+      if (val) result = result.filter((c) => c[col] === val);
+    });
+
+    if (sortCol && sortDir) {
+      result.sort((a, b) => {
+        const av =
+          typeof a[sortCol] === "boolean"
+            ? (a[sortCol] ? "1" : "0")
+            : String(a[sortCol]).toLowerCase();
+        const bv =
+          typeof b[sortCol] === "boolean"
+            ? (b[sortCol] ? "1" : "0")
+            : String(b[sortCol]).toLowerCase();
+        const cmp = av.localeCompare(bv, "de");
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
+
+    return result;
+  }, [tabContacts, searchQuery, colFilters, sortCol, sortDir]);
+
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
+    sortCol !== null ||
+    Object.values(colFilters).some(Boolean);
+
+  const allSelected =
+    displayedContacts.length > 0 && displayedContacts.every((c) => selected.has(c.id));
 
   function toggleAll() {
     if (allSelected) {
       setSelected((prev) => {
         const next = new Set(prev);
-        filteredContacts.forEach((c) => next.delete(c.id));
+        displayedContacts.forEach((c) => next.delete(c.id));
         return next;
       });
     } else {
-      setSelected((prev) => new Set([...prev, ...filteredContacts.map((c) => c.id)]));
+      setSelected((prev) => new Set([...prev, ...displayedContacts.map((c) => c.id)]));
     }
   }
 
@@ -179,12 +228,60 @@ export default function ContactsPage() {
     }
   }
 
+  function handleHeaderSort(col: SortableCol) {
+    if (sortCol !== col) {
+      setSortCol(col);
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortCol(null);
+      setSortDir(null);
+    }
+  }
+
+  function getSortIcon(col: SortableCol) {
+    if (sortCol !== col || !sortDir)
+      return <i className="bi bi-arrow-down-up" style={{ opacity: 0.3 }} />;
+    return <i className={sortDir === "asc" ? "bi bi-arrow-up" : "bi bi-arrow-down"} />;
+  }
+
+  function getUniqueValues(col: FilterableCol): string[] {
+    return [...new Set(tabContacts.map((c) => c[col]))]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, "de"));
+  }
+
+  function setColFilter(col: FilterableCol, val: string) {
+    setColFilters((prev) => ({ ...prev, [col]: val }));
+  }
+
+  function resetFilters() {
+    setSearchQuery("");
+    setSortCol(null);
+    setSortDir(null);
+    setColFilters({});
+  }
+
+  const filterableCols: { key: FilterableCol; label: string }[] = [
+    { key: "firma", label: "Firma" },
+    { key: "empfaenger", label: "Empfänger" },
+    { key: "strasse", label: "Straße" },
+    { key: "plz", label: "PLZ" },
+    { key: "ort", label: "Ort" },
+    { key: "fachrichtung", label: "Fachrichtung" },
+  ];
+
   return (
     <>
       <main className={styles.main}>
         <div className={styles.toolbar}>
           <span className={styles.count}>
-            {filteredContacts.length} Kontakt{filteredContacts.length !== 1 ? "e" : ""}
+            {displayedContacts.length}
+            {hasActiveFilters && tabContacts.length !== displayedContacts.length
+              ? ` von ${tabContacts.length}`
+              : ""}{" "}
+            Kontakt{displayedContacts.length !== 1 ? "e" : ""}
           </span>
           <button
             className={styles.generateBtn}
@@ -214,13 +311,33 @@ export default function ContactsPage() {
           </button>
         </div>
 
+        <div className={styles.filterBar}>
+          <div className={styles.searchWrapper}>
+            <i className="bi bi-search" />
+            <input
+              type="search"
+              placeholder="Suchen…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+          {hasActiveFilters && (
+            <button className={styles.resetBtn} onClick={resetFilters}>
+              <i className="bi bi-x-circle" /> Zurücksetzen
+            </button>
+          )}
+        </div>
+
         {loading ? (
           <p className={styles.empty}>Lade Kontakte…</p>
-        ) : filteredContacts.length === 0 ? (
+        ) : displayedContacts.length === 0 ? (
           <p className={styles.empty}>
             {contacts.length === 0
               ? "Noch keine Kontakte. CSV importieren oder manuell hinzufügen."
-              : "Keine Kontakte in dieser Ansicht."}
+              : tabContacts.length === 0
+              ? "Keine Kontakte in dieser Ansicht."
+              : "Keine Kontakte entsprechen den Filterkriterien."}
           </p>
         ) : (
           <div className={styles.tableWrapper}>
@@ -228,18 +345,44 @@ export default function ContactsPage() {
               <thead>
                 <tr>
                   <th><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
-                  <th>Firma</th>
-                  <th>Empfänger</th>
-                  <th>Straße</th>
-                  <th>PLZ</th>
-                  <th>Ort</th>
-                  <th>Fachrichtung</th>
-                  <th>Status</th>
+                  {filterableCols.map(({ key, label }) => (
+                    <th key={key}>
+                      <div className={styles.thInner}>
+                        <button
+                          className={`${styles.thSort} ${sortCol === key ? styles.thSortActive : ""}`}
+                          onClick={() => handleHeaderSort(key)}
+                        >
+                          {label}
+                          {getSortIcon(key)}
+                        </button>
+                        <select
+                          className={`${styles.colFilter} ${colFilters[key] ? styles.colFilterActive : ""}`}
+                          value={colFilters[key] ?? ""}
+                          onChange={(e) => setColFilter(key, e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="">Alle</option>
+                          {getUniqueValues(key).map((v) => (
+                            <option key={v} value={v}>{v}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </th>
+                  ))}
+                  <th>
+                    <button
+                      className={`${styles.thSort} ${sortCol === "angeschrieben" ? styles.thSortActive : ""}`}
+                      onClick={() => handleHeaderSort("angeschrieben")}
+                    >
+                      Status
+                      {getSortIcon("angeschrieben")}
+                    </button>
+                  </th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {filteredContacts.map((c) => (
+                {displayedContacts.map((c) => (
                   <tr
                     key={c.id}
                     className={selected.has(c.id) ? styles.rowSelected : ""}

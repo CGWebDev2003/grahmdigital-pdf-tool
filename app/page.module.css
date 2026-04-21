@@ -98,12 +98,8 @@
 }
 
 .table th {
-    font-size: .78rem;
-    font-weight: 500;
-    color: #666;
     background: #111;
-    text-transform: uppercase;
-    letter-spacing: .04em;
+    vertical-align: top;
 }
 
 .table tbody tr {
@@ -178,4 +174,140 @@
 .actionBtn:hover {
     color: white;
     background: #2a2a2a;
+}
+
+/* ── Filter bar ─────────────────────────────────── */
+
+.filterBar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1rem;
+}
+
+.searchWrapper {
+    position: relative;
+    flex: 1;
+    max-width: 360px;
+}
+
+.searchWrapper > i {
+    position: absolute;
+    left: .75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    font-size: .875rem;
+    pointer-events: none;
+}
+
+.searchInput {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: white;
+    font-size: .875rem;
+    font-family: inherit;
+    padding: .45rem .75rem .45rem 2.2rem;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.searchInput:focus {
+    border-color: #444;
+}
+
+.searchInput::placeholder {
+    color: #555;
+}
+
+.searchInput::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+.resetBtn {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem .85rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #aaa;
+    font-size: .8rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+    white-space: nowrap;
+}
+
+.resetBtn:hover {
+    color: white;
+    border-color: #555;
+    background: #222;
+}
+
+/* ── Table header sort & filter ──────────────────── */
+
+.thInner {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.thSort {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    background: none;
+    border: none;
+    color: #666;
+    font-size: .78rem;
+    font-weight: 500;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    cursor: pointer;
+    padding: 0;
+    white-space: nowrap;
+    transition: color .15s;
+}
+
+.thSort:hover {
+    color: #aaa;
+}
+
+.thSortActive {
+    color: white;
+}
+
+.colFilter {
+    background: #161616;
+    border: 1px solid #2a2a2a;
+    border-radius: 5px;
+    color: #666;
+    font-size: .72rem;
+    font-family: inherit;
+    padding: .2rem 1.5rem .2rem .45rem;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    text-transform: none;
+    transition: border-color .15s, color .15s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 16 16'%3E%3Cpath fill='%23555' d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right .45rem center;
+}
+
+.colFilter:focus {
+    border-color: #444;
+    color: #aaa;
+}
+
+.colFilterActive {
+    color: white;
+    border-color: #444;
 }
