@@ -90,6 +90,7 @@ export default function ContactsPage() {
   const [generating, setGenerating] = useState(false);
   const [editContact, setEditContact] = useState<Contact | null>(null);
   const [activeTab, setActiveTab] = useState<"offene" | "angeschriebene">("offene");
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const fetchContacts = useCallback(async () => {
     const { data } = await supabase.from("contacts").select("*").order("created_at", { ascending: false });
@@ -139,6 +140,23 @@ export default function ContactsPage() {
   async function toggleAngeschrieben(id: string, current: boolean) {
     await supabase.from("contacts").update({ angeschrieben: !current }).eq("id", id);
     setContacts((prev) => prev.map((c) => c.id === id ? { ...c, angeschrieben: !current } : c));
+  }
+
+  async function handleDownloadSingle(contact: Contact) {
+    setDownloadingId(contact.id);
+    try {
+      await preloadImages();
+      const pdf = generateLetterPdf(contact);
+      const blob = new Blob([pdf.buffer as ArrayBuffer], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `GrahmDigital_Brief_${contact.firma.replace(/[^\wÀ-ž]/g, "_")}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloadingId(null);
+    }
   }
 
   async function handleGenerate() {
@@ -246,6 +264,14 @@ export default function ContactsPage() {
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>
                       <div className={styles.actions}>
+                        <button
+                          className={styles.actionBtn}
+                          title="Brief als PDF herunterladen"
+                          disabled={downloadingId === c.id}
+                          onClick={() => handleDownloadSingle(c)}
+                        >
+                          <i className={downloadingId === c.id ? "bi bi-hourglass-split" : "bi bi-file-earmark-pdf"} />
+                        </button>
                         <button className={styles.actionBtn} title="Bearbeiten" onClick={() => setEditContact(c)}>
                           <i className="bi bi-pencil" />
                         </button>
