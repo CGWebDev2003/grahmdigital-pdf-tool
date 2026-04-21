@@ -89,6 +89,7 @@ export default function ContactsPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [editContact, setEditContact] = useState<Contact | null>(null);
+  const [activeTab, setActiveTab] = useState<"offene" | "angeschriebene">("offene");
 
   const fetchContacts = useCallback(async () => {
     const { data } = await supabase.from("contacts").select("*").order("created_at", { ascending: false });
@@ -102,10 +103,22 @@ export default function ContactsPage() {
     return () => window.removeEventListener("contacts-updated", fetchContacts);
   }, [fetchContacts]);
 
-  const allSelected = contacts.length > 0 && selected.size === contacts.length;
+  const filteredContacts = contacts.filter((c) =>
+    activeTab === "angeschriebene" ? c.angeschrieben : !c.angeschrieben
+  );
+
+  const allSelected = filteredContacts.length > 0 && filteredContacts.every((c) => selected.has(c.id));
 
   function toggleAll() {
-    setSelected(allSelected ? new Set() : new Set(contacts.map((c) => c.id)));
+    if (allSelected) {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        filteredContacts.forEach((c) => next.delete(c.id));
+        return next;
+      });
+    } else {
+      setSelected((prev) => new Set([...prev, ...filteredContacts.map((c) => c.id)]));
+    }
   }
 
   function toggleOne(id: string) {
@@ -153,7 +166,7 @@ export default function ContactsPage() {
       <main className={styles.main}>
         <div className={styles.toolbar}>
           <span className={styles.count}>
-            {contacts.length} Kontakt{contacts.length !== 1 ? "e" : ""}
+            {filteredContacts.length} Kontakt{filteredContacts.length !== 1 ? "e" : ""}
           </span>
           <button
             className={styles.generateBtn}
@@ -168,10 +181,29 @@ export default function ContactsPage() {
           </button>
         </div>
 
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === "offene" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("offene")}
+          >
+            Offene
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === "angeschriebene" ? styles.tabActive : ""}`}
+            onClick={() => setActiveTab("angeschriebene")}
+          >
+            Angeschriebene
+          </button>
+        </div>
+
         {loading ? (
           <p className={styles.empty}>Lade Kontakte…</p>
-        ) : contacts.length === 0 ? (
-          <p className={styles.empty}>Noch keine Kontakte. CSV importieren oder manuell hinzufügen.</p>
+        ) : filteredContacts.length === 0 ? (
+          <p className={styles.empty}>
+            {contacts.length === 0
+              ? "Noch keine Kontakte. CSV importieren oder manuell hinzufügen."
+              : "Keine Kontakte in dieser Ansicht."}
+          </p>
         ) : (
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
@@ -189,7 +221,7 @@ export default function ContactsPage() {
                 </tr>
               </thead>
               <tbody>
-                {contacts.map((c) => (
+                {filteredContacts.map((c) => (
                   <tr
                     key={c.id}
                     className={selected.has(c.id) ? styles.rowSelected : ""}
