@@ -5,6 +5,12 @@
   padding: 0;
 }
 
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   background-color: rgb(21, 21, 21);
   color: white;
